@@ -56,7 +56,7 @@ int IRSensor::getError()
 bool IRSensor::is90Left()
 {
     read();
-    if ((s1 == 1))
+    if ((s1 == 1) && (s2 == 1))
         return true;
     return false;
 }
@@ -64,7 +64,7 @@ bool IRSensor::is90Left()
 bool IRSensor::is90Right()
 {
     read();
-    if (((s5 == 1)) || ((s1 == 1) && (s3 == 0) && (s3 == 0) && (s4 == 0) && (s5 == 1)))
+    if (((s5 == 1) && (s4 == 1)) || ((s1 == 1) && (s3 == 0) && (s3 == 0) && (s4 == 0) && (s5 == 1)))
         return true;
     return false;
 }
