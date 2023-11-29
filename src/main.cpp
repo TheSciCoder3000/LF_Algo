@@ -30,8 +30,8 @@ IRSensor sensor;
 Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 WebServer server(HTTP_REST_PORT);
 
-const char *ssid = "9";
-const char *password = "jvyen30609";
+const char *ssid = "Neural Codex";
+const char *password = "nofreedormwifi3000";
 
 void restServerRouting();
 void showConnection();
@@ -51,7 +51,8 @@ float Kp = 0.06;
 float Kd = 0;
 float Ki = 0;
 
-int minSpeed = -100;
+int maxSpeed = 255;
+int minSpeed = -255;
 
 StaticJsonDocument<1024> jsonDocument;
 char buffer[1024];
@@ -223,54 +224,39 @@ void loop()
   // ============================ REST API ============================
   sensor.read();
 
-  // display.clearDisplay();
-  // display.setCursor(0, 0);
-  // display.print(Kp);
-  // display.print(" | ");
-  // display.print(Ki);
-  // display.print(" | ");
-  // display.print(Kd);
-  // display.print("\r");
-
-  // display.display();
-
-  if (start)
+  if (start && sensor.fullBlackCounter < 7)
   {
-    // display.clearDisplay();
-    // display.setCursor(0, 0);
-    // display.println("Running");
-    // display.display();
 
-    // if (sensor.isIntersection())
-    // {
-    //   delay(100);
-    // }
-    // else if (sensor.is90Left())
-    // {
-    //   display.clearDisplay();
-    //   display.setCursor(0, 0);
-    //   display.println("going left");
-    //   display.display();
-    //   RightMotor.drive(255);
-    //   LeftMotor.drive(0);
-    // }
-    // else if (sensor.is90Right())
-    // {
-    //   display.clearDisplay();
-    //   display.setCursor(0, 0);
-    //   display.println("going right");
-    //   display.display();
-    //   RightMotor.drive(0);
-    //   LeftMotor.drive(255);
-    // }
-    // else
-    // {
-    display.clearDisplay();
-    display.setCursor(0, 0);
-    display.println("following line");
-    display.display();
-    linefollow(sensor.getError());
-    // }
+    if (sensor.is90Left())
+    {
+      display.clearDisplay();
+      display.setCursor(0, 0);
+      display.println("going left");
+      display.display();
+      lsp = -80;
+      rsp = lfspeed;
+      RightMotor.drive(rsp);
+      LeftMotor.drive(lsp);
+    }
+    else if (sensor.is90Right())
+    {
+      display.clearDisplay();
+      display.setCursor(0, 0);
+      display.println("going right");
+      display.display();
+      lsp = lfspeed;
+      rsp = -80;
+      RightMotor.drive(rsp);
+      LeftMotor.drive(lsp);
+    }
+    else if (sensor.isInLine())
+    {
+      display.clearDisplay();
+      display.setCursor(0, 0);
+      display.println("following line");
+      display.display();
+      linefollow(sensor.getError());
+    }
   }
   else
   {
@@ -293,17 +279,17 @@ void linefollow(int _error)
   lsp = lfspeed + PIDvalue;
   rsp = lfspeed - PIDvalue;
 
-  if (lsp > 255)
+  if (lsp > maxSpeed)
   {
-    lsp = 255;
+    lsp = maxSpeed;
   }
   if (lsp < minSpeed)
   {
     lsp = minSpeed;
   }
-  if (rsp > 255)
+  if (rsp > maxSpeed)
   {
-    rsp = 255;
+    rsp = maxSpeed;
   }
   if (rsp < minSpeed)
   {
